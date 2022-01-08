@@ -15,4 +15,18 @@ client.on('messageCreate', message => {
   commands.attemptCommandEvaluation(message);
 });
 
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand()) return;
+
+	const { commandName } = interaction;
+
+	if (commandName === 'rollcall') {
+		await interaction.reply('Pong!');
+	} else if (commandName === 'addmention') {
+		await interaction.reply('Server info.');
+	} else if (commandName === 'removemention') {
+		await interaction.reply('User info.');
+	}
+});
+
 client.login(auth.token);
