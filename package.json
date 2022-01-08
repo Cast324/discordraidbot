@@ -1,10 +1,10 @@
 {
-  "name": "discord-roll-call-bot",
+  "name": "discord-raid-bot",
   "version": "1.0.0",
-  "description": "Regularly scheduled DnD? Party? Figure out who is going and who isn't with this bot.",
+  "description": "Schedule Destiny Raids",
   "main": "bot.js",
-  "author": "Andrew Robinson & Jonas Smith",
+  "author": "Michael Blades",
   "dependencies": {
-    "discord.js": "^12.5.2"
+    "discord.js": "^13.5.0"
   }
 }
