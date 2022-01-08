@@ -55,7 +55,7 @@ function rollCall(client, isFromScheduler = false) {
                 .setDescription(getDescription());
             const messageContent = `${getHumanReadableMentionsList(mentionsList)} are you in?`;
 
-            channel.send({ content: messageContent, embed: messageToSend })
+            channel.send({ content: messageContent, embeds: [messageToSend] })
                 .then(embededMessage => {
                     handleMessageReactions(embededMessage);
                 });
@@ -124,7 +124,7 @@ function handleMessageReactions(embededMessage) {
 
             const editedEmbed = new MessageEmbed(savedMessage.embeds[0]);
             editedEmbed.description = getDescription();
-            savedMessage.edit(editedEmbed).then(editedMessage => {
+            savedMessage.edit({ embeds: [editedEmbed] }).then(editedMessage => {
                 savedMessage = editedMessage
             });
         })
@@ -143,7 +143,7 @@ function handleMessageReactions(embededMessage) {
 
             const editedEmbed = new MessageEmbed(savedMessage.embeds[0]);
             editedEmbed.description = getDescription();
-            savedMessage.edit(editedEmbed).then(editedMessage => {
+            savedMessage.edit({ embeds: [editedEmbed] }).then(editedMessage => {
                 savedMessage = editedMessage
             });
         })
