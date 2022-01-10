@@ -50,7 +50,7 @@ function rollCall(client, isFromScheduler = false) {
             thoseThatAreOut = [];
             mentionsList = settings.thoseToMention;
             const messageToSend = new MessageEmbed()
-                .setTitle('📝 Who\'s going to be joining us tonight?')
+                .setTitle(' Who\'s going to be joining us tonight?')
                 .setColor('0xccff33')
                 .setDescription(getDescription());
             const messageContent = `${getHumanReadableMentionsList(mentionsList)} are you in?`;
@@ -112,7 +112,11 @@ function handleMessageReactions(embededMessage) {
     const filter = (reaction, user) => {
         return ['👍', '👎'].includes(reaction.emoji.name) && user.id !== savedMessage.author.id;
     };
-    savedMessage.createReactionCollector(filter, { time: 86400000, dispose: true }) // One day in milliseconds
+    const collector = savedMessage.createReactionCollector({ filter, time: 15_000 });
+    collector.on('collect', r => console.log(`Collected ${r.emoji.name}`));
+
+
+    savedMessage.createReactionCollector({filter, time: 86400000, dispose: true }) // One day in milliseconds
         .on('collect', (reaction, user) => {
             if (reaction.emoji.name === '👍') {
                 savedMessage.channel.send(`🙋 <@${user.id}> is in!`);

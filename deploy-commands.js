@@ -4,7 +4,7 @@ const { Routes } = require('discord-api-types/v9');
 const { clientId, guildId, token } = require('./auth.json');
 
 const commands = [
-	new SlashCommandBuilder().setName('rollcall').setDescription('Replies with a test rollcall'),
+	new SlashCommandBuilder().setName('createraid').setDescription('Create Raid!'),
 	new SlashCommandBuilder().setName('addmention').setDescription('Add a user to the mention list'),
 	new SlashCommandBuilder().setName('removemention').setDescription('Removes a user from the mention list'),
 ]
