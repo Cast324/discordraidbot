@@ -46,7 +46,7 @@ function createRaid(client, raid, partySize, date) {
                 "inline": true
               },
               {
-                "name": `__🧙Warlock:__`,
+                "name": `__🧙Warlocks:__`,
                 "value": `No Players 😢`,
                 "inline": true
               }
