@@ -4,7 +4,25 @@ const { Routes } = require('discord-api-types/v9');
 const { clientId, guildId, token } = require('./auth.json');
 
 const commands = [
-	new SlashCommandBuilder().setName('createraid').setDescription('Create Raid!'),
+	new SlashCommandBuilder().setName('createraid').setDescription('Create Raid!')
+	.addIntegerOption(option => option.setName('partysize').setDescription('Enter a party size needed for raid. (1-6)'))
+	.addStringOption(option => option.setName('raid').setDescription('Select a Raid').setChoices([
+	["Leviathan", "leviathan"],
+	["Last Wish","lastWish"],
+	["Scourge of the Past","scourgeOfThePast"],
+	["Crown of Sorrow","crownOfSorrow"],
+	["Garden of Salvation","gardenOfSalvation"],
+	["Deep Stone Crypt","deepStoneCrypt"],
+	["Vault of Glass","vaultOfGlass"]]))
+	.addStringOption(option => option.setName('date').setDescription('Select a date for Raid.').setChoices([
+		["Sunday","Sunday"],
+		["Monday","Monday"],
+		["Tuesday","Tuesday"],
+		["Wednesday","Wednesday"],
+		["Thursday","Thursday"],
+		["Friday","Friday"],
+		["Saturday","Saturday"]
+	])),
 	new SlashCommandBuilder().setName('addmention').setDescription('Add a user to the mention list'),
 	new SlashCommandBuilder().setName('removemention').setDescription('Removes a user from the mention list'),
 ]

@@ -14,10 +14,13 @@ client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
 	const { commandName } = interaction;
-
+	
 	if (commandName === 'createraid') {
-		createRaid(client);
 		await interaction.reply({content: 'Created!', ephemeral: true});
+	    const raid = interaction.options.getString('raid');
+		const partySize = interaction.options.getInteger('partysize');
+		const date = interaction.options.getString("date");
+		createRaid(client, raid, partySize, date);
 	} else if (commandName === 'addmention') {
 		await interaction.reply('Server info.');
 	} else if (commandName === 'removemention') {
