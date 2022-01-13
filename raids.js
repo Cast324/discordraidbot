@@ -73,45 +73,42 @@ function createRaid(client, raid, partySize, date) {
           collector.on('collect', async (reaction, user) => {
             console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
             players += 1;
+            const editedEmbed = embededMessage.embeds[0];
+            editedEmbed.description = `Slots filled ${players}/${partySize}`;
             if (reaction.emoji.name == '🏹') {
               await addUserToList(user.id, '🏹');
-              const editedEmbed = embededMessage.embeds[0];
               editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: await getFieldValue('🏹'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🔨') {
               await addUserToList(user.id, '🔨');
-              const editedEmbed = embededMessage.embeds[0];
               editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: await getFieldValue('🔨'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🧙') {
               await addUserToList(user.id, '🧙');
-              const editedEmbed = embededMessage.embeds[0];
               editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: await getFieldValue('🧙'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             }
-            embededMessage.edit({ description: `Slots filled ${players}/${partySize}`});
+            embededMessage.edit({ description: [`Slots filled ${players}/${partySize}`] });
           });
 
           collector.on('remove', async (reaction, user) => {
             console.log(`Removed ${user.tag}`);
             players -= 1;
+            const editedEmbed = embededMessage.embeds[0];
+            editedEmbed.description = `Slots filled ${players}/${partySize}`;
             if (reaction.emoji.name == '🏹') {
               await removeUserFromList(user.id, '🏹');
-              const editedEmbed = embededMessage.embeds[0];
               editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: await getFieldValue('🏹'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🔨') {
               await removeUserFromList(user.id, '🔨');
-              const editedEmbed = embededMessage.embeds[0];
               editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: await getFieldValue('🔨'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🧙') {
               await removeUserFromList(user.id, '🧙');
-              const editedEmbed = embededMessage.embeds[0];
               editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: await getFieldValue('🧙'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             }
-            embededMessage.edit({ description: `Slots filled ${players}/${partySize}`});
           });
 
           collector.on('end', collected => {
