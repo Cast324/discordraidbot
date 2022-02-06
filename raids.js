@@ -1,16 +1,12 @@
 const { MessageEmbed } = require('discord.js');
+const { ConnectionCheckedInEvent } = require('mongodb');
+const connect = require('./connect.js');
+const {Raid} = require('./raid');
 
 const { MENTION_LIST_FILE_PATH, readInFile, writeFile } = require('./file_reader.js');
 
-var mentionsList = [];
-var thoseThatAreIn = [];
-var thoseThatAreOut = [];
-var hunters = [];
-var titans = [];
-var warlocks = [];
-var players = 0;
 
-var savedMessage = null;
+var players = 0;
 
 function createRaid(client, raid, partySize, date) {
   readInFile(MENTION_LIST_FILE_PATH, data => {
@@ -59,10 +55,13 @@ function createRaid(client, raid, partySize, date) {
           }
         ]
       })
-        .then(embededMessage => {
+        .then(async embededMessage => {
           embededMessage.react('🏹');
           embededMessage.react('🔨');
           embededMessage.react('🧙');
+
+          const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId);
+          await connect.createRaid(raid);
 
           const filter = (reaction, user) => {
             return ['🏹', '🔨', '🧙'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
@@ -76,16 +75,16 @@ function createRaid(client, raid, partySize, date) {
             const editedEmbed = embededMessage.embeds[0];
             editedEmbed.description = `Slots filled ${players}/${partySize}`;
             if (reaction.emoji.name == '🏹') {
-              await addUserToList(user.id, '🏹');
-              editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: await getFieldValue('🏹'), inline: true };
+              await addUserToList(embededMessage.id, user.id, '🏹');
+              editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: await getFieldValue(embededMessage.id, '🏹'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🔨') {
-              await addUserToList(user.id, '🔨');
-              editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: await getFieldValue('🔨'), inline: true };
+              await addUserToList(embededMessage.id, user.id, '🔨');
+              editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: await getFieldValue(embededMessage.id, '🔨'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🧙') {
-              await addUserToList(user.id, '🧙');
-              editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: await getFieldValue('🧙'), inline: true };
+              await addUserToList(embededMessage.id, user.id, '🧙');
+              editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: await getFieldValue(embededMessage.id, '🧙'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             }
             embededMessage.edit({ description: [`Slots filled ${players}/${partySize}`] });
@@ -97,16 +96,16 @@ function createRaid(client, raid, partySize, date) {
             const editedEmbed = embededMessage.embeds[0];
             editedEmbed.description = `Slots filled ${players}/${partySize}`;
             if (reaction.emoji.name == '🏹') {
-              await removeUserFromList(user.id, '🏹');
-              editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: await getFieldValue('🏹'), inline: true };
+              await removeUserFromList(embededMessage.id, user.id, '🏹');
+              editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: await getFieldValue(embededMessage.id, '🏹'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🔨') {
-              await removeUserFromList(user.id, '🔨');
-              editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: await getFieldValue('🔨'), inline: true };
+              await removeUserFromList(embededMessage.id, user.id, '🔨');
+              editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: await getFieldValue(embededMessage.id, '🔨'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             } else if (reaction.emoji.name == '🧙') {
-              await removeUserFromList(user.id, '🧙');
-              editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: await getFieldValue('🧙'), inline: true };
+              await removeUserFromList(embededMessage.id, user.id, '🧙');
+              editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: await getFieldValue(embededMessage.id, '🧙'), inline: true };
               embededMessage.edit({ embeds: [editedEmbed] });
             }
           });
@@ -151,44 +150,61 @@ function getRaidName(raid) {
   return raidName;
 };
 
-function addUserToList(user, type) {
-  if (type == '🏹') {
-    hunters.push(`${user}`);
-  } else if (type == '🔨') {
-    titans.push(`${user}`);
-  } else {
-    warlocks.push(`${user}`);
+async function addUserToList(messageId, user, type) {
+  const raid = await connect.getRaid(messageId);
+  if (raid == null) {
+    console.log("No Raid Found!");
+    return;
   }
+  if (type == '🏹') {
+    raid.hunters.push(`${user}`);
+  } else if (type == '🔨') {
+    raid.titans.push(`${user}`);
+  } else {
+    raid.warlocks.push(`${user}`);
+  }
+  await connect.updateRaid(messageId, raid);
 };
 
-function removeUserFromList(user, type) {
+async function removeUserFromList(messageId, user, type) {
+  const raid = await connect.getRaid(messageId);
+  if (raid == null) {
+    console.log("No Raid Found!");
+    return;
+  }
   if (type == '🏹') {
-    hunters = hunters.filter((value) => {
+    raid.hunters = raid.hunters.filter((value) => {
       return value !== user;
     });
   } else if (type == '🔨') {
-    titans = titans.filter((value) => {
+    raid.titans = raid.titans.filter((value) => {
       return value !== user;
     });
   } else {
-    warlocks = warlocks.filter((value) => {
+    raid.warlocks = raid.warlocks.filter((value) => {
       return value !== user;
     });
   }
+  await connect.updateRaid(messageId, raid);
 };
 
-function getFieldValue(type) {
+async function getFieldValue(messageId, type) {
+  const raid = await connect.getRaid(messageId);
+  if (raid == null) {
+    console.log("No Raid Found!");
+    return;
+  }
   var fieldValue = "";
   if (type == '🏹') {
-    hunters.forEach(user => {
+    raid.hunters.forEach(user => {
       fieldValue += `<@${user}>\n`;
     });
   } else if (type == '🔨') {
-    titans.forEach(user => {
+    raid.titans.forEach(user => {
       fieldValue += `<@${user}>\n`;
     });
   } else {
-    warlocks.forEach(user => {
+    raid.warlocks.forEach(user => {
       fieldValue += `<@${user}>\n`;
     });
   }
