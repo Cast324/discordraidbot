@@ -71,9 +71,12 @@ function createRaid(client, raid, partySize, date) {
 
           collector.on('collect', async (reaction, user) => {
             console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-            players += 1;
+            
             const editedEmbed = embededMessage.embeds[0];
-            editedEmbed.description = `Slots filled ${players}/${partySize}`;
+            const raid = await connect.getRaid(embededMessage.id);
+            raid.slotsFilled += 1;
+            await connect.updateRaid(embededMessage.id, raid);
+            editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
             if (reaction.emoji.name == '🏹') {
               await addUserToList(embededMessage.id, user.id, '🏹');
             } else if (reaction.emoji.name == '🔨') {
@@ -91,9 +94,11 @@ function createRaid(client, raid, partySize, date) {
 
           collector.on('remove', async (reaction, user) => {
             console.log(`Removed ${user.tag}`);
-            players -= 1;
             const editedEmbed = embededMessage.embeds[0];
-            editedEmbed.description = `Slots filled ${players}/${partySize}`;
+            const raid = await connect.getRaid(embededMessage.id);
+            raid.slotsFilled -= 1;
+            await connect.updateRaid(embededMessage.id, raid);
+            editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
             if (reaction.emoji.name == '🏹') {
               await removeUserFromList(embededMessage.id, user.id, '🏹');
             } else if (reaction.emoji.name == '🔨') {
