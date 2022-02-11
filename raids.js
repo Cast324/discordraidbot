@@ -74,6 +74,11 @@ function createRaid(client, raid, partySize, date) {
             
             const editedEmbed = embededMessage.embeds[0];
             const raid = await connect.getRaid(embededMessage.id);
+            if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
+              user.send("You are already in the raid! No need to join again! 😀");
+              embededMessage.reactions.resolve(reaction.emoji.name).users.remove(user.id);
+              return;
+            }
             raid.slotsFilled += 1;
             await connect.updateRaid(embededMessage.id, raid);
             editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
@@ -95,10 +100,6 @@ function createRaid(client, raid, partySize, date) {
           collector.on('remove', async (reaction, user) => {
             console.log(`Removed ${user.tag}`);
             const editedEmbed = embededMessage.embeds[0];
-            const raid = await connect.getRaid(embededMessage.id);
-            raid.slotsFilled -= 1;
-            await connect.updateRaid(embededMessage.id, raid);
-            editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
             if (reaction.emoji.name == '🏹') {
               await removeUserFromList(embededMessage.id, user.id, '🏹');
             } else if (reaction.emoji.name == '🔨') {
@@ -106,6 +107,14 @@ function createRaid(client, raid, partySize, date) {
             } else if (reaction.emoji.name == '🧙') {
               await removeUserFromList(embededMessage.id, user.id, '🧙');
             }
+            const raid = await connect.getRaid(embededMessage.id);
+            if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
+              return;
+            }
+            raid.slotsFilled -= 1;
+            await connect.updateRaid(embededMessage.id, raid);
+            editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
+            
             
             const fieldValues = await getFieldValues(embededMessage.id);
             editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
@@ -160,6 +169,7 @@ async function addUserToList(messageId, user, type) {
     console.log("No Raid Found!");
     return;
   }
+  
   if (type == '🏹') {
     raid.hunters.push(`${user}`);
   } else if (type == '🔨') {
