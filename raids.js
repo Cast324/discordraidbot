@@ -2,13 +2,15 @@ const { MessageEmbed } = require('discord.js');
 const { ConnectionCheckedInEvent } = require('mongodb');
 const connect = require('./connect.js');
 const { Raid } = require('./raid');
+const scheduler = require('./scheduler.js');
 
 const { MENTION_LIST_FILE_PATH, readInFile, writeFile } = require('./file_reader.js');
 
-
+var clientServer;
 var players = 0;
 
-function createRaid(client, raid, partySize, date) {
+function createRaid(client, raid, partySize, date, datetime) {
+  clientServer = client;
   readInFile(MENTION_LIST_FILE_PATH, data => {
     const settings = JSON.parse(data);
     var channel = null;
@@ -62,6 +64,8 @@ function createRaid(client, raid, partySize, date) {
 
           const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId);
           await connect.createRaid(raid);
+
+          await scheduler.scheduleReminder(embededMessage.id, datetime)
 
           const filter = (reaction, user) => {
             return ['🏹', '🔨', '🧙'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
@@ -237,7 +241,26 @@ async function getFieldValues(messageId) {
   return fieldValues;
 };
 
+function sendMessageToChannel(message) {
+  readInFile(MENTION_LIST_FILE_PATH, data => {
+    const settings = JSON.parse(data);
+    var channel = null;
+
+    for (const [guildKey, guild] of clientServer.guilds.cache) {
+      for (const [channelKey, cachedChannel] of guild.channels.cache) {
+        if (channelKey == settings.channelToSendTo) {
+          channel = cachedChannel;
+        }
+      }
+    }
+    if (channel !== null) {
+      channel.send(message);
+    }
+  });
+}
+
 exports.createRaid = createRaid;
+exports.sendMessageToChannel = sendMessageToChannel;
 
 // await lib.discord.channels['@0.2.0'].messages.create({
 //   "channel_id": `${context.params.event.channel_id}`,

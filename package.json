@@ -7,6 +7,7 @@
   "dependencies": {
     "@discordjs/builders": "^0.11.0",
     "@discordjs/rest": "^0.2.0-canary.0",
+    "agenda": "^4.2.1",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.5.0",
     "dotenv": "^16.0.0",
