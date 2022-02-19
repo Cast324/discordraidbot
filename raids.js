@@ -3,11 +3,16 @@ const { ConnectionCheckedInEvent } = require('mongodb');
 const connect = require('./connect.js');
 const { Raid } = require('./raid');
 const scheduler = require('./scheduler.js');
+const { Client, Intents, Permissions } = require('discord.js');
 
 const { MENTION_LIST_FILE_PATH, readInFile, writeFile } = require('./file_reader.js');
 
 var clientServer;
 var players = 0;
+
+function setupRaids(client) {
+  clientServer = client;
+}
 
 function createRaid(client, raid, partySize, date, datetime) {
   clientServer = client;
@@ -75,7 +80,7 @@ function createRaid(client, raid, partySize, date, datetime) {
 
           collector.on('collect', async (reaction, user) => {
             console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-            
+
             const editedEmbed = embededMessage.embeds[0];
             const raid = await connect.getRaid(embededMessage.id);
             if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
@@ -93,7 +98,7 @@ function createRaid(client, raid, partySize, date, datetime) {
             } else if (reaction.emoji.name == '🧙') {
               await addUserToList(embededMessage.id, user.id, '🧙');
             }
-            
+
             const fieldValues = await getFieldValues(embededMessage.id);
             editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
             editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
@@ -118,8 +123,8 @@ function createRaid(client, raid, partySize, date, datetime) {
             raid.slotsFilled -= 1;
             await connect.updateRaid(embededMessage.id, raid);
             editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
-            
-            
+
+
             const fieldValues = await getFieldValues(embededMessage.id);
             editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
             editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
@@ -173,7 +178,7 @@ async function addUserToList(messageId, user, type) {
     console.log("No Raid Found!");
     return;
   }
-  
+
   if (type == '🏹') {
     raid.hunters.push(`${user}`);
   } else if (type == '🔨') {
@@ -241,8 +246,8 @@ async function getFieldValues(messageId) {
   return fieldValues;
 };
 
-function sendMessageToChannel(message) {
-  readInFile(MENTION_LIST_FILE_PATH, data => {
+function sendMessageToChannel(message, raid) {
+  readInFile(MENTION_LIST_FILE_PATH, async data => {
     const settings = JSON.parse(data);
     var channel = null;
 
@@ -254,13 +259,71 @@ function sendMessageToChannel(message) {
       }
     }
     if (channel !== null) {
-      channel.send(message);
+
+      const everyoneRole = channel.guild.roles.cache.find(r => r.name === '@everyone');
+      var raidCategory = channel.guild.channels.cache.find(c => c.name === 'Raid Channels');
+      if (raidCategory == null) {
+        await channel.guild.channels.create('Raid Channels', {
+          type: 'GUILD_CATEGORY',
+          permissionOverwrites: [
+            {
+              id: everyoneRole.id,
+              deny: [Permissions.FLAGS.VIEW_CHANNEL]
+            }
+          ]
+        }).then(channelCategory => raidCategory = channelCategory)
+      };
+
+        await channel.guild.channels.create('TestVoice', {
+          type: 'GUILD_VOICE',
+          parent: raidCategory.id
+        }).then(voiceChannel => {
+          raid.hunters.forEach(hunter => {
+            voiceChannel.permissionOverwrites.edit(hunter, {
+              VIEW_CHANNEL: true
+            })
+          });
+          raid.titans.forEach(titan => {
+            voiceChannel.permissionOverwrites.edit(titan, {
+              VIEW_CHANNEL: true
+            })
+          });
+          raid.warlocks.forEach(warlock => {
+            voiceChannel.permissionOverwrites.edit(warlock, {
+              VIEW_CHANNEL: true
+            })
+          });
+          message.embeds[0].description = `Voice Channel is now Open! <#${voiceChannel.id}>\nFireteam:`
+          channel.send(message);
+          scheduler.scheduleChannelDelete(voiceChannel.id);
+        })
     }
   });
 }
 
+function deleteChannel(channelId) {
+  readInFile(MENTION_LIST_FILE_PATH, data => {
+    const settings = JSON.parse(data);
+    var channel = null;
+
+    for (const [guildKey, guild] of clientServer.guilds.cache) {
+      for (const [channelKey, cachedChannel] of guild.channels.cache) {
+        if (channelKey == settings.channelToSendTo) {
+          channel = cachedChannel;
+        }
+      }
+    }
+    if (channel != null) {
+      channel.guild.channels.cache.find(c => c.id === channelId).delete('Raid is Over!');
+    }
+  })
+}
+
 exports.createRaid = createRaid;
 exports.sendMessageToChannel = sendMessageToChannel;
+exports.getFieldValues = getFieldValues;
+exports.setupRaids = setupRaids;
+exports.deleteChannel = deleteChannel;
 
 // await lib.discord.channels['@0.2.0'].messages.create({
 //   "channel_id": `${context.params.event.channel_id}`,
