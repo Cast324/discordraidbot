@@ -278,20 +278,8 @@ function sendMessageToChannel(message, raid) {
           type: 'GUILD_VOICE',
           parent: raidCategory.id
         }).then(voiceChannel => {
-          raid.hunters.forEach(hunter => {
-            voiceChannel.permissionOverwrites.edit(hunter, {
-              VIEW_CHANNEL: true
-            })
-          });
-          raid.titans.forEach(titan => {
-            voiceChannel.permissionOverwrites.edit(titan, {
-              VIEW_CHANNEL: true
-            })
-          });
-          raid.warlocks.forEach(warlock => {
-            voiceChannel.permissionOverwrites.edit(warlock, {
-              VIEW_CHANNEL: true
-            })
+          voiceChannel.permissionOverwrites.edit(everyoneRole, {
+            VIEW_CHANNEL: true
           });
           message.embeds[0].description = `Voice Channel is now Open! <#${voiceChannel.id}>\nFireteam:`
           channel.send(message);
