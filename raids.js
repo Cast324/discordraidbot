@@ -14,7 +14,7 @@ function setupRaids(client) {
   clientServer = client;
 }
 
-function createRaid(client, raid, partySize, date, datetime) {
+function createRaid(client, raid, partySize, datetime) {
   clientServer = client;
   readInFile(MENTION_LIST_FILE_PATH, data => {
     const settings = JSON.parse(data);
@@ -28,13 +28,14 @@ function createRaid(client, raid, partySize, date, datetime) {
       }
     }
     if (channel !== null) {
+      const date = chrono.parseDate(datetime)
       const raidName = getRaidName(raid);
       channel.send({
         "tts": false,
         "embeds": [
           {
             "type": "rich",
-            "title": `${raidName} on ${date}`,
+            "title": `${raidName} on ${datetime}`,
             "description": `Slots filled 0/${partySize}`,
             "color": 0x00FFFF,
             "fields": [
@@ -92,7 +93,7 @@ function createRaid(client, raid, partySize, date, datetime) {
           }).then(voiceChannel => {
             voiceChannel.guild.scheduledEvents.create({
               name: `📆 ${raid.raid}`,
-              scheduledStartTime: chrono.parseDate(datetime),
+              scheduledStartTime: date,
               privacyLevel: 'GUILD_ONLY',
               entityType: 'VOICE',
               channel: voiceChannel,

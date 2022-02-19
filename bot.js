@@ -22,9 +22,8 @@ client.on('interactionCreate', async interaction => {
 		await interaction.reply({content: 'Created!', ephemeral: true});
 	    const raid = interaction.options.getString('raid');
 		const partySize = interaction.options.getInteger('partysize');
-		const date = interaction.options.getString("date");
 		const datetime = interaction.options.getString("datetime");
-		createRaid(client, raid, partySize, date, datetime);
+		createRaid(client, raid, partySize, datetime);
 	} else if (commandName === 'addmention') {
 		await interaction.reply('Server info.');
 	} else if (commandName === 'removemention') {

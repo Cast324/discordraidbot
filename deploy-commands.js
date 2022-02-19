@@ -15,17 +15,6 @@ const commands = [
 	["Garden of Salvation","gardenOfSalvation"],
 	["Deep Stone Crypt","deepStoneCrypt"],
 	["Vault of Glass","vaultOfGlass"]]))
-	.addStringOption(option => option.setName('date').setDescription('Select a date for Raid.').setChoices([
-		["Sunday","Sunday"],
-		["Monday","Monday"],
-		["Tuesday","Tuesday"],
-		["Wednesday","Wednesday"],
-		["Thursday","Thursday"],
-		["Friday","Friday"],
-		["Saturday","Saturday"]
-	])),
-	new SlashCommandBuilder().setName('addmention').setDescription('Add a user to the mention list'),
-	new SlashCommandBuilder().setName('removemention').setDescription('Removes a user from the mention list'),
 ]
 	.map(command => command.toJSON());
 
