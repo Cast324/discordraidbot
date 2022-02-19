@@ -86,7 +86,7 @@ function createRaid(client, raid, partySize, date, datetime) {
             }).then(channelCategory => raidCategory = channelCategory)
           };
 
-          await channel.guild.channels.create(`${raid.raid} ${raid.slotsFilled}/${raid.partySize}`, {
+          await channel.guild.channels.create(`${raid.raid} ${raid.partySize} participants`, {
             type: 'GUILD_VOICE',
             parent: raidCategory.id
           }).then(voiceChannel => {
