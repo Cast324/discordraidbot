@@ -49,7 +49,7 @@ agenda.define("Schedule Reminder", async (job) => {
         }
       ]
     };
-    raids.sendMessageToChannel(message, raid);
+    raids.sendMessageToChannel(message);
   });
 
   async function start() {
@@ -58,7 +58,7 @@ agenda.define("Schedule Reminder", async (job) => {
 
   async function scheduleReminder(messageId, datetime) {
 
-    await agenda.schedule(datetime, "Schedule Reminder", { messageId: messageId});
+    await agenda.schedule(datetime, "Schedule Reminder", { messageId: messageId });
   }
 
   function scheduleChannelDelete(channelId) {
