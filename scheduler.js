@@ -4,7 +4,7 @@ require('dotenv').config();
 const raids = require('./raids.js');
 
 
-const url = `mongodb+srv://mablades:${process.env.NODE_PASSWORD}@cluster0.0cfoc.mongodb.net/test?retryWrites=true&w=majority`;
+const url = `mongodb+srv://arob:${process.env.NODE_PASSWORD}@cluster0.0cfoc.mongodb.net/test?retryWrites=true&w=majority`;
 const agenda = new Agenda({ db: { address: url } });
 
 agenda.define("Delete VoiceChannel", async (job) => {
@@ -49,7 +49,7 @@ agenda.define("Schedule Reminder", async (job) => {
         }
       ]
     };
-    raids.sendMessageToChannel(message, raid);
+    raids.sendMessageToChannel(message);
   });
 
   async function start() {
@@ -58,7 +58,7 @@ agenda.define("Schedule Reminder", async (job) => {
 
   async function scheduleReminder(messageId, datetime) {
 
-    await agenda.schedule(datetime, "Schedule Reminder", { messageId: messageId});
+    await agenda.schedule(datetime, "Schedule Reminder", { messageId: messageId });
   }
 
   function scheduleChannelDelete(channelId) {

@@ -1,9 +1,9 @@
-const { MessageEmbed } = require('discord.js');
 const { ConnectionCheckedInEvent } = require('mongodb');
 const connect = require('./connect.js');
 const { Raid } = require('./raid');
 const scheduler = require('./scheduler.js');
-const { Client, Intents, Permissions } = require('discord.js');
+const { Client, Intents, Permissions, PrivacyLevel, MessageEmbed } = require('discord.js');
+const chrono = require('chrono-node');
 
 const { MENTION_LIST_FILE_PATH, readInFile, writeFile } = require('./file_reader.js');
 
@@ -70,7 +70,41 @@ function createRaid(client, raid, partySize, date, datetime) {
           const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId);
           await connect.createRaid(raid);
 
-          await scheduler.scheduleReminder(embededMessage.id, datetime)
+          await scheduler.scheduleReminder(embededMessage.id, datetime);
+
+          const everyoneRole = channel.guild.roles.cache.find(r => r.name === '@everyone');
+          var raidCategory = channel.guild.channels.cache.find(c => c.name === 'Raid Channels');
+          if (raidCategory == null) {
+            await channel.guild.channels.create('Raid Channels', {
+              type: 'GUILD_CATEGORY',
+              permissionOverwrites: [
+                {
+                  id: everyoneRole.id,
+                  deny: [Permissions.FLAGS.VIEW_CHANNEL]
+                }
+              ]
+            }).then(channelCategory => raidCategory = channelCategory)
+          };
+
+          await channel.guild.channels.create(`${raid.raid} ${raid.slotsFilled}/${raid.partySize}`, {
+            type: 'GUILD_VOICE',
+            parent: raidCategory.id
+          }).then(voiceChannel => {
+            voiceChannel.guild.scheduledEvents.create({
+              name: `📆 ${raid.raid}`,
+              scheduledStartTime: chrono.parseDate(datetime),
+              privacyLevel: 'GUILD_ONLY',
+              entityType: 'VOICE',
+              channel: voiceChannel,
+            }).then(event => {
+              event.setStatus('ACTIVE');
+            });
+            voiceChannel.permissionOverwrites.edit(everyoneRole, {
+              VIEW_CHANNEL: true
+            });
+            // message.embeds[0].description = `Voice Channel is now Open! <#${voiceChannel.id}>\nFireteam:`
+            scheduler.scheduleChannelDelete(voiceChannel.id);
+          });
 
           const filter = (reaction, user) => {
             return ['🏹', '🔨', '🧙'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
@@ -246,7 +280,7 @@ async function getFieldValues(messageId) {
   return fieldValues;
 };
 
-function sendMessageToChannel(message, raid) {
+function sendMessageToChannel(message) {
   readInFile(MENTION_LIST_FILE_PATH, async data => {
     const settings = JSON.parse(data);
     var channel = null;
@@ -259,32 +293,7 @@ function sendMessageToChannel(message, raid) {
       }
     }
     if (channel !== null) {
-
-      const everyoneRole = channel.guild.roles.cache.find(r => r.name === '@everyone');
-      var raidCategory = channel.guild.channels.cache.find(c => c.name === 'Raid Channels');
-      if (raidCategory == null) {
-        await channel.guild.channels.create('Raid Channels', {
-          type: 'GUILD_CATEGORY',
-          permissionOverwrites: [
-            {
-              id: everyoneRole.id,
-              deny: [Permissions.FLAGS.VIEW_CHANNEL]
-            }
-          ]
-        }).then(channelCategory => raidCategory = channelCategory)
-      };
-
-        await channel.guild.channels.create('TestVoice', {
-          type: 'GUILD_VOICE',
-          parent: raidCategory.id
-        }).then(voiceChannel => {
-          voiceChannel.permissionOverwrites.edit(everyoneRole, {
-            VIEW_CHANNEL: true
-          });
-          message.embeds[0].description = `Voice Channel is now Open! <#${voiceChannel.id}>\nFireteam:`
           channel.send(message);
-          scheduler.scheduleChannelDelete(voiceChannel.id);
-        })
     }
   });
 }
