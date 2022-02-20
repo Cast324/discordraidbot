@@ -3,38 +3,43 @@
 </p>
 
 # 📝 Discord Raid Bot
-* Tired of always asking if a group of people are down to play that night? We were too.
-* Introducing Discord Roll Call Bot! 📝 A one-stop-shop for asking your friends if they're down at that same particular date and time.
+* Friends always forgetting raid times? Stuggling to keep your raid voice channels organized? 
+* Introducing Discord Raid Bot! 📝 A one-stop-shop for organizing all of your Destinty 2 raids.
 
 # How to run
 ### Requirement
 * Node
+* MongoDB
 
 ### Setup process
 1. Run `npm install`.
 2. Create a bot with Discord [here](https://discordapp.com/developers/applications/me).
-3. Invite the newly created bot to a server with this link, replacing CLIENT with your bot's client ID: https://discordapp.com/oauth2/authorize?client_id=CLIENT&scope=bot
-4. Copy the bot's OAuth token from the Discord dashboard at the link in step 2.
-5. Create an `auth.json` file in the root folder with the following format and where the bot token can be found in the Discord dashboard:
-  ` {
-      token: "YOUR BOT TOKEN HERE"
-  } `
-6. Modify the `settings.json` `timeToSendMessage` value to be something in the future. (It uses [Unix Time](https://www.epochconverter.com/).)
-6. Run `node bot.js`.
+3. Invite the newly created bot to a server with this link, replacing CLIENT with your bot's client ID: https://discord.com/api/oauth2/authorize?client_id=CLIENT&permissions=8&scope=bot%20applications.commands
+4. Create a MongoDB Database.
+5. Copy the bot's OAuth token from the Discord dashboard at the link in step 2.
+6. Set the following enviorment variables:
+   - `DB_USERNAME` - MongoDB database username 
+   - `NODE_PASSWORD` - MongoDB database password
+   - `DB_NAME` - Name of collection to be created in MonogoDB
+   - `AUTH_TOKEN` - Discord OAuth token
+   - `CLIENT_ID` - Discord Bot Client ID
+7. Run `node bot.js`.
 
 ### Usage
-1. Once added to your server from the steps in [Setup process](https://github.com/SirArkimedes/discordrollcallbot#setup-process), run `!setChannel` to tell the bot which channel to send the scheduled message.
-2. Run `!testRollCall` to see what happens!
-3. Peruse the [Commands](https://github.com/SirArkimedes/discordrollcallbot#commands) section to apply any other customizations!
+1. Once added to your server from the steps in [Setup process](https://github.com/Cast324/discordraidbot#setup-process), run `/setchannel` to tell the bot which channel to send the scheduled message.
+2. Run `/createraid partysize:(partySize) datetime:(dateTime) raid:(raidName) ` to see what happens!
+3. Peruse the [Commands](https://github.com/Cast324/discordraidbot#commands) section to apply any other customizations!
 
 ### Commands
-* `/createraid partysize:(partySize) datetime:(dateTime) raid:Leviathan ` - Adds an @'d list of users to the roll call list. (Will later mention them in the roll call message if they're in this list.)
+* `/createraid partysize:(partySize) datetime:(dateTime) raid:(raidName) ` - Creates a raid that players can react to and join the group. 
+* `/ping` - Bot will respond to let you know its working!
+* `/setchannel` - Set the channel the bot will post messages in.
 
 
 # Thanks!
-* This project was made for those that play DnD (among other things...).
+* This project was made to help organize raids for freinds with busy schedules!
 * Thanks for checking it out!
 
 <p align="center">
-  Made with ❤️ by  <a href="https://github.com/Cast324">Cast324</a> with help from <a href="https://github.com/SirArkimedes">SirArkimedes</a>.
+  Made with ❤️ by <a href="https://github.com/Cast324">Cast324</a> with help from <a href="https://github.com/SirArkimedes">SirArkimedes</a>.
 </p>
