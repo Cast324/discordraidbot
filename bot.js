@@ -4,7 +4,7 @@ if (!process.env.AUTH_TOKEN && !process.env.CLIENT_ID && !process.env.GUILD_ID) 
 	auth = require('./auth.json');
 }
 const commands = require('./commands.js');
-const { createRaid, setupRaids } = require('./raids.js');
+const { setupRaids } = require('./raids.js');
 const scheduler = require('./scheduler.js');
 
 const client = new Client({ intents: [
@@ -26,21 +26,7 @@ client.on('ready', async () => {
 });
 
 client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return;
-
-	const { commandName } = interaction;
-
-	if (commandName === 'createraid') {
-		await interaction.reply({ content: 'Created!', ephemeral: true });
-		const raid = interaction.options.getString('raid');
-		const partySize = interaction.options.getInteger('partysize');
-		const datetime = interaction.options.getString("datetime");
-		createRaid(client, raid, partySize, datetime);
-	} else if (commandName === 'addmention') {
-		await interaction.reply('Server info.');
-	} else if (commandName === 'removemention') {
-		await interaction.reply('User info.');
-	}
+	await commands.attemptInteractionEvaluation(interaction);
 });
 
 client.login(auth.token);
