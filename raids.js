@@ -283,6 +283,22 @@ async function getFieldValues(messageId) {
   return fieldValues;
 };
 
+function getHumanReadableMentionsList(mentionsList) {
+  var thoseToMention = '';
+  for (i = 0; i < mentionsList.length; i++) {
+      if (mentionsList.length != 1 && i == mentionsList.length - 1) {
+          thoseToMention += ' and '
+      }
+
+      thoseToMention += `<@${mentionsList[i]}>`
+
+      if (mentionsList.length != 1 && i != mentionsList.length - 1 && mentionsList.length != 2) {
+          thoseToMention += ', '
+      }
+  }
+  return thoseToMention;
+};
+
 function sendMessageToChannel(message, raid) {
   readInFile(SETTINGS_FILE_PATH, async data => {
     const settings = JSON.parse(data);
@@ -299,6 +315,7 @@ function sendMessageToChannel(message, raid) {
       const event = channel.guild.scheduledEvents.cache.find(event => event.id === raid.eventId);
       event.setStatus('ACTIVE');
 
+      message['content'] = getHumanReadableMentionsList([].concat(raid.hunters, raid.titans, raid.warlocks));
       channel.send(message);
     }
   });
