@@ -27,7 +27,7 @@ client.on('ready', async () => {
 });
 
 client.on('interactionCreate', async interaction => {
-	await commands.attemptInteractionEvaluation(interaction);
+	await commands.attemptInteractionEvaluation(interaction, client);
 });
 
 client.login(auth.token);

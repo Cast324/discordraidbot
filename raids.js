@@ -5,7 +5,7 @@ const scheduler = require('./scheduler.js');
 const { Client, Intents, Permissions, PrivacyLevel, MessageEmbed } = require('discord.js');
 const chrono = require('chrono-node');
 
-const { MENTION_LIST_FILE_PATH, readInFile, writeFile } = require('./file_reader.js');
+const { SETTINGS_FILE_PATH, readInFile } = require('./file_reader.js');
 
 var clientServer;
 var players = 0;
@@ -16,7 +16,7 @@ function setupRaids(client) {
 
 function createRaid(client, raid, partySize, datetime) {
   clientServer = client;
-  readInFile(MENTION_LIST_FILE_PATH, data => {
+  readInFile(SETTINGS_FILE_PATH, data => {
     const settings = JSON.parse(data);
     var channel = null;
 
@@ -284,7 +284,7 @@ async function getFieldValues(messageId) {
 };
 
 function sendMessageToChannel(message, raid) {
-  readInFile(MENTION_LIST_FILE_PATH, async data => {
+  readInFile(SETTINGS_FILE_PATH, async data => {
     const settings = JSON.parse(data);
     var channel = null;
 
@@ -305,7 +305,7 @@ function sendMessageToChannel(message, raid) {
 }
 
 function deleteChannel(channelId) {
-  readInFile(MENTION_LIST_FILE_PATH, data => {
+  readInFile(SETTINGS_FILE_PATH, data => {
     const settings = JSON.parse(data);
     var channel = null;
 

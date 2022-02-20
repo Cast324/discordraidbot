@@ -7,7 +7,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 
-async function attemptInteractionEvaluation(interaction) {
+async function attemptInteractionEvaluation(interaction, client) {
     if (!interaction.isCommand()) return;
 
 	const { commandName } = interaction;
