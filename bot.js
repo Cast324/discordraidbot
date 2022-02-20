@@ -20,6 +20,7 @@ if (process.env.AUTH_TOKEN != null && process.env.CLIENT_ID != null && process.e
 
 client.on('ready', async () => {
 	console.log(`Logged in as ${client.user.tag}!`);
+	commands.registerCommands(client, auth.token, auth.clientId);
 	setupRaids(client);
 	await scheduler.start();
 });

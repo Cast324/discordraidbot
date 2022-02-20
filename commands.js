@@ -3,6 +3,10 @@ const { MessageEmbed } = require('discord.js');
 const { readInFile, writeFile, MENTION_LIST_FILE_PATH } = require('./file_reader.js');
 const { getHumanReadableMentionsList, rollCall } = require('./rollcall.js');
 
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
+
 function attemptCommandEvaluation(message) {
     var messageContent = message.content;
     if (messageContent.startsWith('!scheduledMentionAdd')) {
@@ -17,6 +21,30 @@ function attemptCommandEvaluation(message) {
         testRollCall(message);
     } else if (messageContent.startsWith('!ping')) {
         ping(message);
+    }
+};
+
+function registerCommands(client, authToken, clientId) {
+    for (const [guildKey, guild] of client.guilds.cache) {
+        const commands = [
+            new SlashCommandBuilder().setName('createraid').setDescription('Create Raid!')
+            .addIntegerOption(option => option.setName('partysize').setDescription('Enter a party size needed for raid. (1-6)'))
+            .addStringOption(option => option.setName('datetime').setDescription('Enter a date and time for raid. Ex (2/17/2022 5pm)'))
+            .addStringOption(option => option.setName('raid').setDescription('Select a Raid').setChoices([
+            ["Leviathan", "leviathan"],
+            ["Last Wish","lastWish"],
+            ["Scourge of the Past","scourgeOfThePast"],
+            ["Crown of Sorrow","crownOfSorrow"],
+            ["Garden of Salvation","gardenOfSalvation"],
+            ["Deep Stone Crypt","deepStoneCrypt"],
+            ["Vault of Glass","vaultOfGlass"]]))
+        ].map(command => command.toJSON());
+
+        const rest = new REST({ version: '9' }).setToken(authToken);
+
+        rest.put(Routes.applicationGuildCommands(clientId, guildKey), { body: commands })
+            .then(() => console.log('Successfully registered application commands.'))
+            .catch(console.error);
     }
 };
 
@@ -103,3 +131,4 @@ function ping(message) {
 }
 
 exports.attemptCommandEvaluation = attemptCommandEvaluation;
+exports.registerCommands = registerCommands;
