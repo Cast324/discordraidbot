@@ -68,11 +68,6 @@ function createRaid(client, raid, partySize, datetime) {
           embededMessage.react('🔨');
           embededMessage.react('🧙');
 
-          const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId);
-          await connect.createRaid(raid);
-
-          await scheduler.scheduleReminder(embededMessage.id, datetime);
-
           const everyoneRole = channel.guild.roles.cache.find(r => r.name === '@everyone');
           var raidCategory = channel.guild.channels.cache.find(c => c.name === 'Raid Channels');
           if (raidCategory == null) {
@@ -87,25 +82,32 @@ function createRaid(client, raid, partySize, datetime) {
             }).then(channelCategory => raidCategory = channelCategory)
           };
 
-          await channel.guild.channels.create(`${raid.raid} ${raid.partySize} participants`, {
+          var eventId = null;
+          var voiceChannelId = null;
+          await channel.guild.channels.create(`${raidName}`, {
             type: 'GUILD_VOICE',
             parent: raidCategory.id
-          }).then(voiceChannel => {
-            voiceChannel.guild.scheduledEvents.create({
-              name: `📆 ${raid.raid}`,
+          }).then(async voiceChannel => {
+            voiceChannelId = voiceChannel.id;
+            await voiceChannel.guild.scheduledEvents.create({
+              name: `📆 ${raidName} — ${partySize} participants`,
               scheduledStartTime: date,
               privacyLevel: 'GUILD_ONLY',
               entityType: 'VOICE',
               channel: voiceChannel,
             }).then(event => {
-              event.setStatus('ACTIVE');
+              eventId = event.id;
             });
+
             voiceChannel.permissionOverwrites.edit(everyoneRole, {
               VIEW_CHANNEL: true
             });
-            // message.embeds[0].description = `Voice Channel is now Open! <#${voiceChannel.id}>\nFireteam:`
-            scheduler.scheduleChannelDelete(voiceChannel.id);
           });
+
+          const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId, voiceChannelId, eventId);
+          await connect.createRaid(raid);
+
+          await scheduler.scheduleReminder(embededMessage.id, datetime);
 
           const filter = (reaction, user) => {
             return ['🏹', '🔨', '🧙'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
@@ -281,7 +283,7 @@ async function getFieldValues(messageId) {
   return fieldValues;
 };
 
-function sendMessageToChannel(message) {
+function sendMessageToChannel(message, raid) {
   readInFile(MENTION_LIST_FILE_PATH, async data => {
     const settings = JSON.parse(data);
     var channel = null;
@@ -294,7 +296,10 @@ function sendMessageToChannel(message) {
       }
     }
     if (channel !== null) {
-          channel.send(message);
+      const event = channel.guild.scheduledEvents.cache.find(event => event.id === raid.eventId);
+      event.setStatus('ACTIVE');
+
+      channel.send(message);
     }
   });
 }

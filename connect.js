@@ -16,21 +16,8 @@ async function createRaid(raid) {
         const db = client.db(dbName);
 
         const col = db.collection("raids");
-        // Construct a document                                                                                                                                                              
-        let raidDocument = {
-            "partySize": raid.partySize,
-            "raid": raid.raid,
-            "date": raid.date,
-            "createdBy": raid.createdBy,
-            "messageId": raid.messageId,
-            "channelId": raid.channelId,
-            "slotsFilled": raid.slotsFilled,
-            "hunters": raid.hunters,
-            "titans": raid.titans,
-            "warlocks": raid.warlocks
-        }
         // Insert a single document, wait for promise so we can read it back
-        const p = await col.insertOne(raidDocument);
+        const p = await col.insertOne(raid.databaseDocument());
     } catch (err) {
         console.log(err.stack);
     }

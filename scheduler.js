@@ -22,7 +22,7 @@ agenda.define("Schedule Reminder", async (job) => {
         {
           "type": "rich",
           "title": `Time for ${raid.raid} raid.`,
-          "description": `Voice Channel is now Open!\nFireteam:`,
+          "description": `Voice Channel is now Open! <#${raid.voiceChannelId}>\nFireteam:`,
           "color": 0x00FFFF,
           "fields": [
             {
@@ -49,7 +49,8 @@ agenda.define("Schedule Reminder", async (job) => {
         }
       ]
     };
-    raids.sendMessageToChannel(message);
+    raids.sendMessageToChannel(message, raid);
+    scheduleChannelDelete(raid.voiceChannelId);
   });
 
   async function start() {
