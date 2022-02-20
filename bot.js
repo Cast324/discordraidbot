@@ -1,6 +1,6 @@
 const { Client, Intents } = require('discord.js');
 var auth = {};
-if (!process.env.AUTH_TOKEN && !process.env.CLIENT_ID && !process.env.GUILD_ID) {
+if (!process.env.AUTH_TOKEN && !process.env.CLIENT_ID) {
 	auth = require('./auth.json');
 }
 const commands = require('./commands.js');
@@ -14,7 +14,7 @@ const client = new Client({ intents: [
     Intents.FLAGS.GUILD_VOICE_STATES,
 ]});
 
-if (process.env.AUTH_TOKEN != null && process.env.CLIENT_ID != null && process.env.GUILD_ID != null) {
+if (process.env.AUTH_TOKEN != null && process.env.CLIENT_ID != null) {
 	auth.token = process.env.AUTH_TOKEN;
 	auth.clientId = process.env.CLIENT_ID;
 }
