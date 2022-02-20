@@ -2,7 +2,7 @@
   <img src="Rounded Logo.png" alt="icon" width="300" height="300">
 </p>
 
-# 📝 Discord Roll Call Bot
+# 📝 Discord Raid Bot
 * Tired of always asking if a group of people are down to play that night? We were too.
 * Introducing Discord Roll Call Bot! 📝 A one-stop-shop for asking your friends if they're down at that same particular date and time.
 
@@ -28,17 +28,13 @@
 3. Peruse the [Commands](https://github.com/SirArkimedes/discordrollcallbot#commands) section to apply any other customizations!
 
 ### Commands
-* `!scheduledMentionAdd {username(s)}` - Adds an @'d list of users to the roll call list. (Will later mention them in the roll call message if they're in this list.)
-* `!scheduledMentionRemove {username(s)}` - Removes an @'d list of users to the roll call list.
-* `!showMentionsList` - Displays who gets mentioned on the roll call message.
-* `!setChannel` - Sets the channel at which to send the scheduled roll call to.
-* `!testRollCall` - Sends a non-scheduled roll call message.
-* `!ping` - Responds with a message to show that the bot is alive and well.
+* `/createraid partysize:(partySize) datetime:(dateTime) raid:Leviathan ` - Adds an @'d list of users to the roll call list. (Will later mention them in the roll call message if they're in this list.)
+
 
 # Thanks!
 * This project was made for those that play DnD (among other things...).
 * Thanks for checking it out!
 
 <p align="center">
-  Made with ❤️ by  <a href="https://github.com/SirArkimedes">SirArkimedes</a> and <a href="https://github.com/JonasESmith">JonasESmith</a>.
+  Made with ❤️ by  <a href="https://github.com/Cast324">Cast324</a> with help from <a href="https://github.com/SirArkimedes">SirArkimedes</a>.
 </p>
