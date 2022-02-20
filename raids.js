@@ -316,8 +316,14 @@ function deleteChannel(channelId) {
         }
       }
     }
+
     if (channel != null) {
-      channel.guild.channels.cache.find(c => c.id === channelId).delete('Raid is Over!');
+      const voiceChannel = channel.guild.channels.cache.find(c => c.id === channelId);
+      if (voiceChannel.members.size > 0) {
+        scheduler.scheduleFollowUpChannelDelete(channelId);
+      } else {
+        voiceChannel.delete('Raid is Over!');
+      }
     }
   })
 }
