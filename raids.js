@@ -19,6 +19,7 @@ function createRaid(client, raid, partySize, datetime) {
   readInFile(SETTINGS_FILE_PATH, data => {
     const settings = JSON.parse(data);
     var channel = null;
+    var destinyRoll = null;
 
     for (const [guildKey, guild] of client.guilds.cache) {
       for (const [channelKey, cachedChannel] of guild.channels.cache) {
@@ -26,12 +27,20 @@ function createRaid(client, raid, partySize, datetime) {
           channel = cachedChannel;
         }
       }
+
+      for (const [roleKey, role] of guild.roles.cache) {
+        if (role.name == 'destiny2' || role.name == 'destiny') {
+          destinyRoll = role.id;
+        }
+      }
     }
+
     if (channel !== null) {
       const date = chrono.parseDate(datetime)
       const raidName = getRaidName(raid);
       channel.send({
         "tts": false,
+        "content": `Squad up, <@&${destinyRoll}>! A new raid just dropped.`,
         "embeds": [
           {
             "type": "rich",
@@ -284,7 +293,7 @@ async function getFieldValues(messageId) {
 };
 
 function getHumanReadableMentionsList(mentionsList) {
-  var thoseToMention = '';
+  var thoseToMention = 'No one joined! 😭';
   for (i = 0; i < mentionsList.length; i++) {
       if (mentionsList.length != 1 && i == mentionsList.length - 1) {
           thoseToMention += ' and '
