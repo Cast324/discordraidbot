@@ -16,7 +16,7 @@ const client = new Client({ intents: [
 
 if (process.env.AUTH_TOKEN != null && process.env.CLIENT_ID != null && process.env.GUILD_ID != null) {
 	auth.token = process.env.AUTH_TOKEN;
-  }
+}
 
 client.on('ready', async () => {
 	console.log(`Logged in as ${client.user.tag}!`);
