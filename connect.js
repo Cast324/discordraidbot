@@ -6,6 +6,9 @@ require('dotenv').config();
 const url = `mongodb+srv://mablades:${process.env.NODE_PASSWORD}@cluster0.0cfoc.mongodb.net/stg?retryWrites=true&w=majority`;
 const client = new MongoClient(url);
 
+// The database to use
+const dbName = "stg";
+
 async function createRaid(raid) {
     try {
         await client.connect();
