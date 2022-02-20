@@ -4,7 +4,7 @@ require('dotenv').config();
 const raids = require('./raids.js');
 
 
-const url = `mongodb+srv://mablades:${process.env.NODE_PASSWORD}@cluster0.0cfoc.mongodb.net/stg?retryWrites=true&w=majority`;
+const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.NODE_PASSWORD}@cluster0.0cfoc.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
 const agenda = new Agenda({ db: { address: url } });
 
 const SCHEDULE_REMINDER_EVENT = "SCHEDULE_REMINDER_EVENT"
