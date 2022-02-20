@@ -16,6 +16,7 @@ const client = new Client({ intents: [
 
 if (process.env.AUTH_TOKEN != null && process.env.CLIENT_ID != null && process.env.GUILD_ID != null) {
 	auth.token = process.env.AUTH_TOKEN;
+	auth.clientId = process.env.CLIENT_ID;
 }
 
 client.on('ready', async () => {
