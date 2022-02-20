@@ -1,7 +1,15 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { clientId, guildId, token } = require('./auth.json');
+if (!process.env.AUTH_TOKEN && !process.env.CLIENT_ID && !process.env.GUILD_ID) {
+	auth = require('./auth.json');
+}
+
+if (process.env.AUTH_TOKEN != null && process.env.CLIENT_ID != null && process.env.GUILD_ID != null) {
+	auth.token = process.env.AUTH_TOKEN;
+	auth.clientId = process.env.CLIENT_ID;
+	auth.guildId = process.env.GUILD_ID;
+  }
 
 const commands = [
 	new SlashCommandBuilder().setName('createraid').setDescription('Create Raid!')
@@ -18,8 +26,8 @@ const commands = [
 ]
 	.map(command => command.toJSON());
 
-const rest = new REST({ version: '9' }).setToken(token);
+const rest = new REST({ version: '9' }).setToken(auth.token);
 
-rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
+rest.put(Routes.applicationGuildCommands(auth.clientId, auth.guildId), { body: commands })
 	.then(() => console.log('Successfully registered application commands.'))
 	.catch(console.error);
