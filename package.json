@@ -12,9 +12,10 @@
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.5.0",
     "dotenv": "^16.0.0",
-    "mongodb": "^4.3.1"
+    "mongodb": "^4.3.1",
+    "pm2": "^5.2.0"
   },
   "scripts": {
-    "start": "node bot.js"
+    "start": "pm2 start bot.js"
   }
 }

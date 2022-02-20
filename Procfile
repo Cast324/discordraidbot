@@ -1,1 +1,1 @@
-worker: node bot.js
+worker: pm2 start bot.js
