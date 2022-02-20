@@ -3,7 +3,7 @@ const Raid = require('./raid');
 require('dotenv').config();
 
 // Replace the following with your Atlas connection string                                                                                                                                        
-const url = `mongodb+srv://mablades:${process.env.NODE_PASSWORD}@cluster0.0cfoc.mongodb.net/test?retryWrites=true&w=majority`;
+const url = `mongodb+srv://mablades:${process.env.NODE_PASSWORD}@cluster0.0cfoc.mongodb.net/stg?retryWrites=true&w=majority`;
 const client = new MongoClient(url);
 
 // The database to use
