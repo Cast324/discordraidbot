@@ -1,11 +1,12 @@
 class Raid {
-    constructor(date, raid, partySize, createdBy, messageId, channelId, voiceChannelId, eventId) {
+    constructor(date, raid, partySize, createdBy, messageId, channelId, guildId, voiceChannelId, eventId) {
         this.partySize = partySize;
         this.raid = raid;
         this.date = date;
         this.createdBy = createdBy;
         this.messageId = messageId;
         this.channelId = channelId;
+        this.guildId = guildId;
         this.voiceChannelId = voiceChannelId;
         this.eventId = eventId;
 
@@ -23,6 +24,7 @@ class Raid {
             "createdBy": this.createdBy,
             "messageId": this.messageId,
             "channelId": this.channelId,
+            "guildId": this.guildId,
             "slotsFilled": this.slotsFilled,
             "hunters": this.hunters,
             "titans": this.titans,

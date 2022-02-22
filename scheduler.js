@@ -12,7 +12,7 @@ const DELETE_VOICE_CHANNEL_EVENT = "DELETE_VOICE_CHANNEL_EVENT"
 
 agenda.define(DELETE_VOICE_CHANNEL_EVENT, async (job) => {
   console.log("Attempting to delete voice channel: " + job.attrs.data.channelId);
-  raids.deleteChannel(job.attrs.data.channelId);
+  raids.deleteChannel(job.attrs.data.channelId, job.attrs.data.guildId);
 });
 
 agenda.define(SCHEDULE_REMINDER_EVENT, async (job) => {
@@ -53,7 +53,7 @@ agenda.define(SCHEDULE_REMINDER_EVENT, async (job) => {
       ]
     };
     raids.sendMessageToChannel(message, raid);
-    scheduleInitialChannelDelete(raid.voiceChannelId);
+    scheduleInitialChannelDelete(raid.voiceChannelId, raid.guildId);
   });
 
   async function start() {
@@ -64,13 +64,13 @@ agenda.define(SCHEDULE_REMINDER_EVENT, async (job) => {
     await agenda.schedule(datetime, SCHEDULE_REMINDER_EVENT, { messageId: messageId });
   }
 
-  function scheduleInitialChannelDelete(channelId) {
-    agenda.schedule("in 3 hours", DELETE_VOICE_CHANNEL_EVENT, { channelId: channelId });
+  function scheduleInitialChannelDelete(channelId, guildId) {
+    agenda.schedule("in 3 hours", DELETE_VOICE_CHANNEL_EVENT, { channelId: channelId, guildId: guildId });
   }
 
-  function scheduleFollowUpChannelDelete(channelId) {
+  function scheduleFollowUpChannelDelete(channelId, guildId) {
     console.log("Scheduled followup delete voice channel: " + channelId);
-    agenda.schedule("in 1 hour", DELETE_VOICE_CHANNEL_EVENT, { channelId: channelId });
+    agenda.schedule("in 1 hour", DELETE_VOICE_CHANNEL_EVENT, { channelId: channelId, guildId: guildId });
   }
 
   exports.scheduleReminder = scheduleReminder;

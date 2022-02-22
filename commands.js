@@ -1,6 +1,5 @@
 const { MessageEmbed } = require('discord.js');
 
-const { readInFile, writeFile, SETTINGS_FILE_PATH } = require('./file_reader.js');
 const { createRaid } = require('./raids.js');
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
@@ -16,7 +15,7 @@ async function attemptInteractionEvaluation(interaction, client) {
 		const raid = interaction.options.getString('raid');
 		const partySize = interaction.options.getInteger('partysize');
 		const datetime = interaction.options.getString("datetime");
-		createRaid(client, raid, partySize, datetime);
+		createRaid(client, raid, partySize, datetime, interaction.channel.id);
 	} else if (commandName == 'setchannel') {
         setChannel(interaction);
         succeeded = true;
@@ -50,21 +49,6 @@ function registerCommands(client, authToken, clientId) {
             .catch(console.error);
     }
 };
-
-function setChannel(interaction) {
-    readInFile(SETTINGS_FILE_PATH, data => {
-        var settings = JSON.parse(data);
-        settings.channelToSendTo = interaction.channel.id;
-
-        writeFile(SETTINGS_FILE_PATH, JSON.stringify(settings, null, '\t'), succeeded => {
-            if (succeeded) {
-                interaction.reply({ content: 'Success!' });
-            } else {
-                interaction.reply({ content: 'Failed!' });
-            }
-        });
-    });
-}
 
 exports.attemptInteractionEvaluation = attemptInteractionEvaluation;
 exports.registerCommands = registerCommands;

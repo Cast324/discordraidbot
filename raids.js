@@ -5,25 +5,20 @@ const scheduler = require('./scheduler.js');
 const { Client, Intents, Permissions, PrivacyLevel, MessageEmbed } = require('discord.js');
 const chrono = require('chrono-node');
 
-const { SETTINGS_FILE_PATH, readInFile } = require('./file_reader.js');
-
 var clientServer;
-var players = 0;
 
 function setupRaids(client) {
   clientServer = client;
 }
 
-function createRaid(client, raid, partySize, datetime) {
+function createRaid(client, raid, partySize, datetime, channelId) {
   clientServer = client;
-  readInFile(SETTINGS_FILE_PATH, data => {
-    const settings = JSON.parse(data);
     var channel = null;
     var destinyRoll = null;
 
     for (const [guildKey, guild] of client.guilds.cache) {
       for (const [channelKey, cachedChannel] of guild.channels.cache) {
-        if (channelKey == settings.channelToSendTo) {
+        if (channelKey == channelId) {
           channel = cachedChannel;
         }
       }
@@ -113,7 +108,7 @@ function createRaid(client, raid, partySize, datetime) {
             });
           });
 
-          const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId, voiceChannelId, eventId);
+          const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId, embededMessage.guild.id, voiceChannelId, eventId);
           await connect.createRaid(raid);
 
           await scheduler.scheduleReminder(embededMessage.id, datetime);
@@ -184,7 +179,6 @@ function createRaid(client, raid, partySize, datetime) {
         });
 
     }
-  })
 };
 
 function getRaidName(raid) {
@@ -293,7 +287,10 @@ async function getFieldValues(messageId) {
 };
 
 function getHumanReadableMentionsList(mentionsList) {
-  var thoseToMention = 'No one joined! 😭';
+  var thoseToMention = '';
+  if (mentionsList.length < 0 ) {
+    thoseToMention = 'No one joined! 😭';
+  }
   for (i = 0; i < mentionsList.length; i++) {
       if (mentionsList.length != 1 && i == mentionsList.length - 1) {
           thoseToMention += ' and '
@@ -309,13 +306,11 @@ function getHumanReadableMentionsList(mentionsList) {
 };
 
 function sendMessageToChannel(message, raid) {
-  readInFile(SETTINGS_FILE_PATH, async data => {
-    const settings = JSON.parse(data);
     var channel = null;
 
     for (const [guildKey, guild] of clientServer.guilds.cache) {
       for (const [channelKey, cachedChannel] of guild.channels.cache) {
-        if (channelKey == settings.channelToSendTo) {
+        if (channelKey == raid.channelId) {
           channel = cachedChannel;
         }
       }
@@ -327,31 +322,20 @@ function sendMessageToChannel(message, raid) {
       message['content'] = getHumanReadableMentionsList([].concat(raid.hunters, raid.titans, raid.warlocks));
       channel.send(message);
     }
-  });
 }
 
-function deleteChannel(channelId) {
-  readInFile(SETTINGS_FILE_PATH, data => {
-    const settings = JSON.parse(data);
-    var channel = null;
-
+function deleteChannel(channelId, guildId) {
     for (const [guildKey, guild] of clientServer.guilds.cache) {
-      for (const [channelKey, cachedChannel] of guild.channels.cache) {
-        if (channelKey == settings.channelToSendTo) {
-          channel = cachedChannel;
+        if (guild.id == guildId) {
+          const voiceChannel = guild.channels.cache.find(c => c.id === channelId);
+          if (voiceChannel.members.size > 0) {
+            scheduler.scheduleFollowUpChannelDelete(channelId, guildId);
+          } else {
+            console.log(`Deleting voicechannel ${voiceChannel.id}`);
+            voiceChannel.delete('Raid is Over!');
+          }
         }
-      }
     }
-
-    if (channel != null) {
-      const voiceChannel = channel.guild.channels.cache.find(c => c.id === channelId);
-      if (voiceChannel.members.size > 0) {
-        scheduler.scheduleFollowUpChannelDelete(channelId);
-      } else {
-        voiceChannel.delete('Raid is Over!');
-      }
-    }
-  })
 }
 
 exports.createRaid = createRaid;

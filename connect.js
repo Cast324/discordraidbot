@@ -58,23 +58,6 @@ async function getRaid(messageId) {
     }
 }
 
-
-async function getPerson() {
-    await client.connect();
-    const db = client.db(dbName);
-
-    const col = db.collection("people");
-    const cursor = col.find({
-        name: "Michael"
-    })
-
-    const results = await cursor.toArray();
-    results.forEach(p => {
-        console.log(p)
-    });
-    client.close();
-}
-
 function isConnected() {
     return !!client && !!client.topology && client.topology.isConnected()
 }
