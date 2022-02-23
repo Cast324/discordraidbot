@@ -11,174 +11,165 @@ function setupRaids(client) {
   clientServer = client;
 }
 
-function createRaid(client, raid, partySize, datetime, channelId) {
+function createRaid(client, raid, partySize, datetime, channel, guild) {
   clientServer = client;
-    var channel = null;
-    var destinyRoll = null;
+  var destinyRoll = null;
 
-    for (const [guildKey, guild] of client.guilds.cache) {
-      for (const [channelKey, cachedChannel] of guild.channels.cache) {
-        if (channelKey == channelId) {
-          channel = cachedChannel;
-        }
-      }
-
-      for (const [roleKey, role] of guild.roles.cache) {
-        if (role.name == 'destiny2' || role.name == 'destiny') {
-          destinyRoll = role.id;
-        }
-      }
+  for (const [roleKey, role] of guild.roles.cache) {
+    if (role.name.toLowerCase() == 'destiny2' || role.name.toLowerCase() == 'destiny') {
+      destinyRoll = role.id;
     }
+  }
 
-    if (channel !== null) {
-      const date = chrono.parseDate(datetime)
-      const raidName = getRaidName(raid);
-      channel.send({
-        "tts": false,
-        "content": `Squad up, <@&${destinyRoll}>! A new raid just dropped.`,
-        "embeds": [
-          {
-            "type": "rich",
-            "title": `${raidName} on ${datetime}`,
-            "description": `Slots filled 0/${partySize}`,
-            "color": 0x00FFFF,
-            "fields": [
-              {
-                "name": `__🏹Hunters:__`,
-                "value": `No Players 😢`,
-                "inline": true
-              },
-              {
-                "name": `__🔨Titans:__`,
-                "value": `No Players 😢`,
-                "inline": true
-              },
-              {
-                "name": `__🧙Warlocks:__`,
-                "value": `No Players 😢`,
-                "inline": true
-              }
-            ],
-            "thumbnail": {
-              "url": `https://yt3.ggpht.com/9jGpeBrg6BvsqBroU6rbXg_DHB8HY-Ewgn_Io4L8Iqlsag2LGyz212D9_QUBLaRP2rkgQ-rlbA=s900-c-k-c0x00ffffff-no-rj`,
-              "height": 0,
-              "width": 0
+  if (channel !== null) {
+    const date = chrono.parseDate(datetime)
+    const raidName = getRaidName(raid);
+    channel.send({
+      "tts": false,
+      "content": `Squad up, <@&${destinyRoll}>! A new raid just dropped.`,
+      "embeds": [
+        {
+          "type": "rich",
+          "title": `${raidName} on ${datetime}`,
+          "description": `Slots filled 0/${partySize}`,
+          "color": 0x00FFFF,
+          "fields": [
+            {
+              "name": `__🏹Hunters:__`,
+              "value": `No Players 😢`,
+              "inline": true
+            },
+            {
+              "name": `__🔨Titans:__`,
+              "value": `No Players 😢`,
+              "inline": true
+            },
+            {
+              "name": `__🧙Warlocks:__`,
+              "value": `No Players 😢`,
+              "inline": true
             }
+          ],
+          "thumbnail": {
+            "url": `https://yt3.ggpht.com/9jGpeBrg6BvsqBroU6rbXg_DHB8HY-Ewgn_Io4L8Iqlsag2LGyz212D9_QUBLaRP2rkgQ-rlbA=s900-c-k-c0x00ffffff-no-rj`,
+            "height": 0,
+            "width": 0
           }
-        ]
-      })
-        .then(async embededMessage => {
-          embededMessage.react('🏹');
-          embededMessage.react('🔨');
-          embededMessage.react('🧙');
+        }
+      ]
+    })
+      .then(async embededMessage => {
+        embededMessage.react('🏹');
+        embededMessage.react('🔨');
+        embededMessage.react('🧙');
 
-          const everyoneRole = channel.guild.roles.cache.find(r => r.name === '@everyone');
-          var raidCategory = channel.guild.channels.cache.find(c => c.name === 'Raid Channels');
-          if (raidCategory == null) {
-            await channel.guild.channels.create('Raid Channels', {
-              type: 'GUILD_CATEGORY',
-              permissionOverwrites: [
-                {
-                  id: everyoneRole.id,
-                  deny: [Permissions.FLAGS.VIEW_CHANNEL]
-                }
-              ]
-            }).then(channelCategory => raidCategory = channelCategory)
-          };
+        const everyoneRole = channel.guild.roles.cache.find(r => r.name === '@everyone');
+        var raidCategory = channel.guild.channels.cache.find(c => c.name === 'Raid Channels');
+        if (raidCategory == null) {
+          await channel.guild.channels.create('Raid Channels', {
+            type: 'GUILD_CATEGORY',
+            permissionOverwrites: [
+              {
+                id: everyoneRole.id,
+                deny: [Permissions.FLAGS.VIEW_CHANNEL]
+              }
+            ]
+          }).then(channelCategory => raidCategory = channelCategory)
+        };
 
-          var eventId = null;
-          var voiceChannelId = null;
-          await channel.guild.channels.create(`${raidName}`, {
-            type: 'GUILD_VOICE',
-            parent: raidCategory.id
-          }).then(async voiceChannel => {
-            voiceChannelId = voiceChannel.id;
-            await voiceChannel.guild.scheduledEvents.create({
-              name: `📆 ${raidName} — ${partySize} participants`,
-              scheduledStartTime: date,
-              privacyLevel: 'GUILD_ONLY',
-              entityType: 'VOICE',
-              channel: voiceChannel,
-            }).then(event => {
-              eventId = event.id;
-            });
-
-            voiceChannel.permissionOverwrites.edit(everyoneRole, {
-              VIEW_CHANNEL: true
-            });
+        var eventId = null;
+        var voiceChannelId = null;
+        await channel.guild.channels.create(`${raidName}`, {
+          type: 'GUILD_VOICE',
+          parent: raidCategory.id
+        }).then(async voiceChannel => {
+          voiceChannelId = voiceChannel.id;
+          await voiceChannel.guild.scheduledEvents.create({
+            name: `📆 ${raidName} — ${partySize} participants`,
+            scheduledStartTime: date,
+            privacyLevel: 'GUILD_ONLY',
+            entityType: 'VOICE',
+            channel: voiceChannel,
+          }).then(event => {
+            eventId = event.id;
           });
 
-          const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId, embededMessage.guild.id, voiceChannelId, eventId);
-          await connect.createRaid(raid);
-
-          await scheduler.scheduleReminder(embededMessage.id, datetime);
-
-          const filter = (reaction, user) => {
-            return ['🏹', '🔨', '🧙'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
-          };
-
-          const collector = embededMessage.createReactionCollector({ filter, time: 86400000, dispose: true });
-
-          collector.on('collect', async (reaction, user) => {
-            console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-
-            const editedEmbed = embededMessage.embeds[0];
-            const raid = await connect.getRaid(embededMessage.id);
-            if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
-              user.send("You are already in the raid! No need to join again! 😀");
-              embededMessage.reactions.resolve(reaction.emoji.name).users.remove(user.id);
-              return;
-            }
-            raid.slotsFilled += 1;
-            await connect.updateRaid(embededMessage.id, raid);
-            editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
-            if (reaction.emoji.name == '🏹') {
-              await addUserToList(embededMessage.id, user.id, '🏹');
-            } else if (reaction.emoji.name == '🔨') {
-              await addUserToList(embededMessage.id, user.id, '🔨');
-            } else if (reaction.emoji.name == '🧙') {
-              await addUserToList(embededMessage.id, user.id, '🧙');
-            }
-
-            const fieldValues = await getFieldValues(embededMessage.id);
-            editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
-            editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
-            editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: fieldValues.warlocks, inline: true };
-            embededMessage.edit({ embeds: [editedEmbed] });
-          });
-
-          collector.on('remove', async (reaction, user) => {
-            console.log(`Removed ${user.tag}`);
-            const editedEmbed = embededMessage.embeds[0];
-            if (reaction.emoji.name == '🏹') {
-              await removeUserFromList(embededMessage.id, user.id, '🏹');
-            } else if (reaction.emoji.name == '🔨') {
-              await removeUserFromList(embededMessage.id, user.id, '🔨');
-            } else if (reaction.emoji.name == '🧙') {
-              await removeUserFromList(embededMessage.id, user.id, '🧙');
-            }
-            const raid = await connect.getRaid(embededMessage.id);
-            if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
-              return;
-            }
-            raid.slotsFilled -= 1;
-            await connect.updateRaid(embededMessage.id, raid);
-            editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
-
-
-            const fieldValues = await getFieldValues(embededMessage.id);
-            editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
-            editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
-            editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: fieldValues.warlocks, inline: true };
-            embededMessage.edit({ embeds: [editedEmbed] });
-          });
-
-          collector.on('end', collected => {
-            console.log(`Collected ${collected.size} items`);
+          voiceChannel.permissionOverwrites.edit(everyoneRole, {
+            VIEW_CHANNEL: true
           });
         });
 
-    }
+        const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId, embededMessage.guild.id, voiceChannelId, eventId);
+        await connect.createRaid(raid);
+
+        await scheduler.scheduleReminder(embededMessage.id, datetime);
+
+        const filter = (reaction, user) => {
+          return ['🏹', '🔨', '🧙'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
+        };
+
+        const collector = embededMessage.createReactionCollector({ filter, time: 86400000, dispose: true });
+
+        collector.on('collect', async (reaction, user) => {
+          console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
+
+          const editedEmbed = embededMessage.embeds[0];
+          const raid = await connect.getRaid(embededMessage.id);
+          if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
+            user.send("You are already in the raid! No need to join again! 😀");
+            embededMessage.reactions.resolve(reaction.emoji.name).users.remove(user.id);
+            return;
+          }
+          raid.slotsFilled += 1;
+          await connect.updateRaid(embededMessage.id, raid);
+          editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
+          if (reaction.emoji.name == '🏹') {
+            await addUserToList(embededMessage.id, user.id, '🏹');
+          } else if (reaction.emoji.name == '🔨') {
+            await addUserToList(embededMessage.id, user.id, '🔨');
+          } else if (reaction.emoji.name == '🧙') {
+            await addUserToList(embededMessage.id, user.id, '🧙');
+          }
+
+          const fieldValues = await getFieldValues(embededMessage.id);
+          editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
+          editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
+          editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: fieldValues.warlocks, inline: true };
+          embededMessage.edit({ embeds: [editedEmbed] });
+        });
+
+        collector.on('remove', async (reaction, user) => {
+          console.log(`Removed ${user.tag}`);
+          const editedEmbed = embededMessage.embeds[0];
+          if (reaction.emoji.name == '🏹') {
+            await removeUserFromList(embededMessage.id, user.id, '🏹');
+          } else if (reaction.emoji.name == '🔨') {
+            await removeUserFromList(embededMessage.id, user.id, '🔨');
+          } else if (reaction.emoji.name == '🧙') {
+            await removeUserFromList(embededMessage.id, user.id, '🧙');
+          }
+          const raid = await connect.getRaid(embededMessage.id);
+          if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
+            return;
+          }
+          raid.slotsFilled -= 1;
+          await connect.updateRaid(embededMessage.id, raid);
+          editedEmbed.description = `Slots filled ${raid.slotsFilled}/${raid.partySize}`;
+
+
+          const fieldValues = await getFieldValues(embededMessage.id);
+          editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
+          editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
+          editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: fieldValues.warlocks, inline: true };
+          embededMessage.edit({ embeds: [editedEmbed] });
+        });
+
+        collector.on('end', collected => {
+          console.log(`Collected ${collected.size} items`);
+        });
+      });
+
+  }
 };
 
 function getRaidName(raid) {
@@ -288,54 +279,54 @@ async function getFieldValues(messageId) {
 
 function getHumanReadableMentionsList(mentionsList) {
   var thoseToMention = '';
-  if (mentionsList.length < 0 ) {
+  if (mentionsList.length <= 0) {
     thoseToMention = 'No one joined! 😭';
   }
   for (i = 0; i < mentionsList.length; i++) {
-      if (mentionsList.length != 1 && i == mentionsList.length - 1) {
-          thoseToMention += ' and '
-      }
+    if (mentionsList.length != 1 && i == mentionsList.length - 1) {
+      thoseToMention += ' and '
+    }
 
-      thoseToMention += `<@${mentionsList[i]}>`
+    thoseToMention += `<@${mentionsList[i]}>`
 
-      if (mentionsList.length != 1 && i != mentionsList.length - 1 && mentionsList.length != 2) {
-          thoseToMention += ', '
-      }
+    if (mentionsList.length != 1 && i != mentionsList.length - 1 && mentionsList.length != 2) {
+      thoseToMention += ', '
+    }
   }
   return thoseToMention;
 };
 
 function sendMessageToChannel(message, raid) {
-    var channel = null;
+  var channel = null;
 
-    for (const [guildKey, guild] of clientServer.guilds.cache) {
-      for (const [channelKey, cachedChannel] of guild.channels.cache) {
-        if (channelKey == raid.channelId) {
-          channel = cachedChannel;
-        }
+  for (const [guildKey, guild] of clientServer.guilds.cache) {
+    for (const [channelKey, cachedChannel] of guild.channels.cache) {
+      if (channelKey == raid.channelId) {
+        channel = cachedChannel;
       }
     }
-    if (channel !== null) {
-      const event = channel.guild.scheduledEvents.cache.find(event => event.id === raid.eventId);
-      event.setStatus('ACTIVE');
+  }
+  if (channel !== null) {
+    const event = channel.guild.scheduledEvents.cache.find(event => event.id === raid.eventId);
+    event.setStatus('ACTIVE');
 
-      message['content'] = getHumanReadableMentionsList([].concat(raid.hunters, raid.titans, raid.warlocks));
-      channel.send(message);
-    }
+    message['content'] = getHumanReadableMentionsList([].concat(raid.hunters, raid.titans, raid.warlocks));
+    channel.send(message);
+  }
 }
 
 function deleteChannel(channelId, guildId) {
-    for (const [guildKey, guild] of clientServer.guilds.cache) {
-        if (guild.id == guildId) {
-          const voiceChannel = guild.channels.cache.find(c => c.id === channelId);
-          if (voiceChannel.members.size > 0) {
-            scheduler.scheduleFollowUpChannelDelete(channelId, guildId);
-          } else {
-            console.log(`Deleting voicechannel ${voiceChannel.id}`);
-            voiceChannel.delete('Raid is Over!');
-          }
-        }
+  for (const [guildKey, guild] of clientServer.guilds.cache) {
+    if (guild.id == guildId) {
+      const voiceChannel = guild.channels.cache.find(c => c.id === channelId);
+      if (voiceChannel.members.size > 0) {
+        scheduler.scheduleFollowUpChannelDelete(channelId, guildId);
+      } else {
+        console.log(`Deleting voicechannel ${voiceChannel.id}`);
+        voiceChannel.delete('Raid is Over!');
+      }
     }
+  }
 }
 
 exports.createRaid = createRaid;

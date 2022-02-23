@@ -15,7 +15,7 @@ async function attemptInteractionEvaluation(interaction, client) {
 		const raid = interaction.options.getString('raid');
 		const partySize = interaction.options.getInteger('partysize');
 		const datetime = interaction.options.getString("datetime");
-		createRaid(client, raid, partySize, datetime, interaction.channel.id);
+		createRaid(client, raid, partySize, datetime, interaction.channel, interaction.guild);
 	} else if (commandName == 'setchannel') {
         setChannel(interaction);
         succeeded = true;
