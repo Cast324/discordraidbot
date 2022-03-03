@@ -37,7 +37,8 @@ function registerCommands(client, authToken, clientId) {
                 ["Crown of Sorrow","crownOfSorrow"],
                 ["Garden of Salvation","gardenOfSalvation"],
                 ["Deep Stone Crypt","deepStoneCrypt"],
-                ["Vault of Glass","vaultOfGlass"]])),
+                ["Vault of Glass","vaultOfGlass"],
+                ["Vow of the Disciple", "vowOfTheDisciple"]])),
             new SlashCommandBuilder().setName('ping').setDescription('Wanna play a game?'),
             new SlashCommandBuilder().setName('setchannel').setDescription('Set the current channel for the reminder to send a message in.'),
         ].map(command => command.toJSON());

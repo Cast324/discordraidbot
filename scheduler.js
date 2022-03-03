@@ -42,6 +42,11 @@ agenda.define(SCHEDULE_REMINDER_EVENT, async (job) => {
               "name": `__🧙Warlocks:__`,
               "value": feildValues.warlocks,
               "inline": true
+            },
+            {
+              "name": `__🧩Fills:__`,
+              "value": feildValues.fills,
+              "inline": true
             }
           ],
           "thumbnail": {

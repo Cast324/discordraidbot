@@ -48,6 +48,11 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
               "name": `__🧙Warlocks:__`,
               "value": `No Players 😢`,
               "inline": true
+            },
+            {
+              "name": `__🧩Fills:__`,
+              "value": `No Players 😢`,
+              "inline": true
             }
           ],
           "thumbnail": {
@@ -62,6 +67,7 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
         embededMessage.react('🏹');
         embededMessage.react('🔨');
         embededMessage.react('🧙');
+        embededMessage.react('🧩');
 
         const everyoneRole = channel.guild.roles.cache.find(r => r.name === '@everyone');
         var raidCategory = channel.guild.channels.cache.find(c => c.name === 'Raid Channels');
@@ -102,10 +108,10 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
         const raid = new Raid(date, raidName, partySize, "testUser", embededMessage.id, embededMessage.channelId, embededMessage.guild.id, voiceChannelId, eventId);
         await connect.createRaid(raid);
 
-        await scheduler.scheduleReminder(embededMessage.id, datetime);
+        await scheduler.scheduleReminder(embededMessage.id, date);
 
         const filter = (reaction, user) => {
-          return ['🏹', '🔨', '🧙'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
+          return ['🏹', '🔨', '🧙', '🧩'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
         };
 
         const collector = embededMessage.createReactionCollector({ filter, time: 86400000, dispose: true });
@@ -115,7 +121,7 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
 
           const editedEmbed = embededMessage.embeds[0];
           const raid = await connect.getRaid(embededMessage.id);
-          if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
+          if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id) || raid.fills.includes(user.id)) {
             user.send("You are already in the raid! No need to join again! 😀");
             embededMessage.reactions.resolve(reaction.emoji.name).users.remove(user.id);
             return;
@@ -129,12 +135,15 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
             await addUserToList(embededMessage.id, user.id, '🔨');
           } else if (reaction.emoji.name == '🧙') {
             await addUserToList(embededMessage.id, user.id, '🧙');
+          } else if (reaction.emoji.name == '🧩') {
+            await addUserToList(embededMessage.id, user.id, '🧩');
           }
 
           const fieldValues = await getFieldValues(embededMessage.id);
           editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
           editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
           editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: fieldValues.warlocks, inline: true };
+          editedEmbed.fields[3] = { name: editedEmbed.fields[3].name, value: fieldValues.fills, inline: true };
           embededMessage.edit({ embeds: [editedEmbed] });
         });
 
@@ -147,9 +156,12 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
             await removeUserFromList(embededMessage.id, user.id, '🔨');
           } else if (reaction.emoji.name == '🧙') {
             await removeUserFromList(embededMessage.id, user.id, '🧙');
+          } else if (reaction.emoji.name == '🧩') {
+            await removeUserFromList(embededMessage.id, user.id, '🧩');
           }
+
           const raid = await connect.getRaid(embededMessage.id);
-          if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id)) {
+          if (raid.hunters.includes(user.id) || raid.titans.includes(user.id) || raid.warlocks.includes(user.id) || raid.fills.includes(user.id)) {
             return;
           }
           raid.slotsFilled -= 1;
@@ -161,6 +173,7 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
           editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
           editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
           editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: fieldValues.warlocks, inline: true };
+          editedEmbed.fields[2] = { name: editedEmbed.fields[3].name, value: fieldValues.fills, inline: true };
           embededMessage.edit({ embeds: [editedEmbed] });
         });
 
@@ -196,6 +209,9 @@ function getRaidName(raid) {
     case 'vaultOfGlass':
       raidName = 'Vault of Glass';
       break;
+    case 'vowOfTheDisciple':
+      raidName = "Vow of the Disciple";
+      break;
     default:
       raidName = raid;
   }
@@ -214,9 +230,12 @@ async function addUserToList(messageId, user, type) {
     raid.hunters.push(`${user}`);
   } else if (type == '🔨') {
     raid.titans.push(`${user}`);
-  } else {
+  } else if (type == '🧙') {
     raid.warlocks.push(`${user}`);
+  } else if (type == '🧩') {
+    raid.fills.push(`${user}`);
   }
+
   await connect.updateRaid(messageId, raid);
 };
 
@@ -234,11 +253,16 @@ async function removeUserFromList(messageId, user, type) {
     raid.titans = raid.titans.filter((value) => {
       return value !== user;
     });
-  } else {
+  } else if (type == '🧙'){
     raid.warlocks = raid.warlocks.filter((value) => {
       return value !== user;
     });
+  } else if (type == '🧩'){
+    raid.fills = raid.fills.filter((value) => {
+      return value !== user;
+    });
   }
+
   await connect.updateRaid(messageId, raid);
 };
 
@@ -251,7 +275,8 @@ async function getFieldValues(messageId) {
   var fieldValues = {
     hunters: '',
     titans: '',
-    warlocks: ''
+    warlocks: '',
+    fills: ''
   };
 
 
@@ -272,6 +297,12 @@ async function getFieldValues(messageId) {
   });
   if (fieldValues.warlocks === '') {
     fieldValues.warlocks = 'No Players 😢';
+  }
+  raid.fills.forEach(user => {
+    fieldValues.fills += `<@${user}>\n`;
+  });
+  if (fieldValues.fills === '') {
+    fieldValues.fills = 'No Players 😢';
   }
 
   return fieldValues;
@@ -310,7 +341,7 @@ function sendMessageToChannel(message, raid) {
     const event = channel.guild.scheduledEvents.cache.find(event => event.id === raid.eventId);
     event.setStatus('ACTIVE');
 
-    message['content'] = getHumanReadableMentionsList([].concat(raid.hunters, raid.titans, raid.warlocks));
+    message['content'] = getHumanReadableMentionsList([].concat(raid.hunters, raid.titans, raid.warlocks, raid.fills));
     channel.send(message);
   }
 }

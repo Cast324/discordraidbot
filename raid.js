@@ -14,6 +14,7 @@ class Raid {
         this.hunters = [];
         this.titans = [];
         this.warlocks = [];
+        this.fills = [];
     }
 
     databaseDocument() {
@@ -29,6 +30,7 @@ class Raid {
             "hunters": this.hunters,
             "titans": this.titans,
             "warlocks": this.warlocks,
+            "fills": this.fills,
             "voiceChannelId": this.voiceChannelId,
             "eventId": this.eventId,
         }
