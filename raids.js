@@ -173,7 +173,7 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
           editedEmbed.fields[0] = { name: editedEmbed.fields[0].name, value: fieldValues.hunters, inline: true };
           editedEmbed.fields[1] = { name: editedEmbed.fields[1].name, value: fieldValues.titans, inline: true };
           editedEmbed.fields[2] = { name: editedEmbed.fields[2].name, value: fieldValues.warlocks, inline: true };
-          editedEmbed.fields[2] = { name: editedEmbed.fields[3].name, value: fieldValues.fills, inline: true };
+          editedEmbed.fields[3] = { name: editedEmbed.fields[3].name, value: fieldValues.fills, inline: true };
           embededMessage.edit({ embeds: [editedEmbed] });
         });
 
