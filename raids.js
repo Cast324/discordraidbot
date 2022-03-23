@@ -114,7 +114,7 @@ function createRaid(client, raid, partySize, datetime, channel, guild) {
           return ['🏹', '🔨', '🧙', '🧩'].includes(reaction.emoji.name) && user.id !== embededMessage.author.id;
         };
 
-        const collector = embededMessage.createReactionCollector({ filter, time: 86400000, dispose: true });
+        const collector = embededMessage.createReactionCollector({ filter, time: 604800000, dispose: true });
 
         collector.on('collect', async (reaction, user) => {
           console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
